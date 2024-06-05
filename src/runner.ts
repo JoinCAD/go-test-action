@@ -29,7 +29,8 @@ class Runner {
         moduleName,
         testEvents,
         '',
-        this.inputs.omit
+        this.inputs.omit,
+        this.inputs.sorting
       )
 
       await renderer.writeSummary()
@@ -46,7 +47,8 @@ class Runner {
         moduleName,
         testEvents,
         stderr,
-        this.inputs.omit
+        this.inputs.omit,
+        this.inputs.sorting
       )
 
       await renderer.writeSummary()

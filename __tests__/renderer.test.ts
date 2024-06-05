@@ -12,7 +12,7 @@ import {
 import { parseTestEvents } from '../src/events'
 import Renderer from '../src/renderer'
 import { SummaryTableCell } from '@actions/core/lib/summary'
-import { OmitOption } from '../src/inputs'
+import { OmitOption, SortOption } from '../src/inputs'
 
 const loadSummaryHTML = async (): Promise<cheerio.CheerioAPI> => {
   const file = await fs.readFile(testSummaryFilePath, { encoding: 'utf8' })
@@ -27,6 +27,7 @@ const getRenderer = async (): Promise<Renderer> => {
     'github.com/robherley/go-test-example',
     testEvents,
     '', // stderr
+    new Set(),
     new Set()
   )
 }
@@ -104,6 +105,7 @@ describe('renderer', () => {
       'github.com/robherley/empty-module',
       [],
       '',
+      new Set(),
       new Set()
     )
     await renderer.writeSummary()
@@ -270,5 +272,15 @@ describe('renderer', () => {
     const $ = await loadSummaryHTML()
 
     expect($('summary:contains(🖨️ Output)')).toHaveLength(0)
+  })
+
+  it('renders correct order of table rows', async () => {
+    const renderer = await getRenderer()
+    renderer.sorting.add(SortOption.Status)
+    await renderer.writeSummary()
+    const $ = await loadSummaryHTML()
+
+    // TODO
+    expect(renderer.packageResults[1].conclusions.fail).toEqual(2)
   })
 })

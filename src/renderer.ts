@@ -3,7 +3,7 @@ import type { SummaryTableRow } from '@actions/core/lib/summary'
 
 import type { ConclusionResults } from './results'
 import PackageResult from './results'
-import { OmitOption } from './inputs'
+import { OmitOption, SortOption } from './inputs'
 
 import type {
   TestEvent,
@@ -17,6 +17,7 @@ class Renderer {
   testEvents: TestEvent[]
   stderr: string
   omit: Set<OmitOption>
+  sorting: Set<SortOption>
   packageResults: PackageResult[]
   headers: SummaryTableRow = [
     { data: '📦 Package', header: true },
@@ -35,12 +36,14 @@ class Renderer {
     moduleName: string | null,
     testEvents: TestEvent[],
     stderr: string,
-    omit: Set<OmitOption>
+    omit: Set<OmitOption>,
+    sorting: Set<SortOption>
   ) {
     this.moduleName = moduleName
     this.testEvents = testEvents
     this.stderr = stderr
     this.omit = omit
+    this.sorting = sorting
     this.packageResults = this.calculatePackageResults()
   }
 
@@ -62,6 +65,10 @@ class Renderer {
     if (resultsToRender.length === 0) {
       core.debug('no packages with tests, skipping render')
       return
+    }
+
+    if (this.sorting) {
+      this.sortResults(resultsToRender)
     }
 
     const rows: SummaryTableRow[] = [this.headers]
@@ -103,6 +110,47 @@ class Renderer {
     }
 
     return packageResults
+  }
+
+  /**
+   * Sorts package results based on the sort option input
+   * @param results package results array
+   */
+  private sortResults(results: PackageResult[]) {
+    if (this.sorting.size > 1) {
+      return
+    }
+
+    if (this.sorting.has(SortOption.Name)) {
+      results.sort((a, b) => {
+        if (a.packageEvent.package > b.packageEvent.package) {
+          return 1
+        }
+        if (a.packageEvent.package < b.packageEvent.package) {
+          return -1
+        }
+        return 0
+      })
+    }
+    if (this.sorting.has(SortOption.Status)) {
+      results.sort((a, b) => {
+        if (a.conclusions.fail > b.conclusions.fail) {
+          return 1
+        }
+        if (a.conclusions.fail < b.conclusions.fail) {
+          return -1
+        }
+        return 0
+      })
+    }
+    if (this.sorting.has(SortOption.Duration)) {
+      results.sort((a, b) => {
+        if (a.packageEvent.elapsed && b.packageEvent.elapsed) {
+          return a.packageEvent.elapsed - b.packageEvent.elapsed
+        }
+        return 0
+      })
+    }
   }
 
   /**

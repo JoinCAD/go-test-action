@@ -5,6 +5,16 @@ export interface Inputs {
   testArguments: string[]
   fromJSONFile: string | null
   omit: Set<OmitOption>
+  sorting: Set<SortOption>
+}
+
+export enum SortOption {
+  // Sort by package name
+  Name = 'name',
+  // Sort by test status
+  Status = 'status',
+  // Sort by test duration
+  Duration = 'duration',
 }
 
 export enum OmitOption {
@@ -27,6 +37,7 @@ export const defaultInputs = (): Inputs => ({
   testArguments: ['./...'],
   fromJSONFile: null,
   omit: new Set(),
+  sorting: new Set(),
 })
 
 /**
@@ -63,6 +74,16 @@ export function getInputs(): Inputs {
         Object.values(OmitOption).includes(option as OmitOption)
       )
       .forEach(option => inputs.omit.add(option as OmitOption))
+  }
+
+  const sort = core.getInput('sort')
+  if (sort) {
+    sort
+      .split(/\s/)
+      .filter(option =>
+        Object.values(SortOption).includes(option as SortOption)
+      )
+      .forEach(option => inputs.sorting.add(option as SortOption))
   }
 
   return inputs

@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import { OmitOption, getInputs } from '../src/inputs'
+import { OmitOption, SortOption, getInputs } from '../src/inputs'
 
 jest.mock('@actions/core')
 
@@ -26,6 +26,7 @@ describe('renderer', () => {
       testArguments: ['./...'],
       fromJSONFile: null,
       omit: new Set(),
+      sorting: new Set(),
     })
   })
 
@@ -58,6 +59,16 @@ describe('renderer', () => {
     const inputs = getInputs()
 
     expect(inputs.omit).toEqual(new Set(Object.values(OmitOption)))
+  })
+
+  it('parses sort', () => {
+    mockInput(
+      'sort',
+      [...Object.values(SortOption), 'foo', 'bar', 'baz'].join('\n')
+    )
+    const inputs = getInputs()
+
+    expect(inputs.sorting).toEqual(new Set(Object.values(SortOption)))
   })
 
   it('supports deprecated inputs', () => {

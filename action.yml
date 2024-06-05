@@ -33,6 +33,10 @@ inputs:
     description: 'Omit any packages from summary output that are successful'
     required: false
     default: 'false'
+  sort:
+    description: 'Sort the output by package name, status, or duration'
+    required: false
+    default: 'name'
 runs:
   using: 'node20'
   main: 'dist/index.js'
